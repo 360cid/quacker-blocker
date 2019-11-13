@@ -1,0 +1,21 @@
+{
+  "name": "quacker-blocker",
+  "version": "1.0.0",
+  "description": "A tracker-blocking extension for Chrome and other browsers",
+  "main": "app.js",
+  "scripts": {
+    "build": "webpack -p",
+    "dev": "webpack --mode=development --watch",
+    "test": "echo \"TODO\" && exit 1"
+  },
+  "author": "360cid@gmail.com",
+  "private": true,
+  "license": "ISC",
+  "devDependencies": {
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.10"
+  },
+  "dependencies": {
+    "abp-filter-parser": "^0.2.0"
+  }
+}

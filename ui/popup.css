@@ -1,0 +1,102 @@
+:root {
+    --border-color-primary: #ddd;
+    --text-color-primary: #111;
+    --toggle-bg-color: #eee;
+    --toggle-size-base: 16px;
+    --space-sm: 8px;
+    --space-med: 16px;
+}
+
+body {
+    font-family:Arial, Helvetica, sans-serif;
+    font-size: 1rem;
+    width: 240px;
+}
+.header {
+    border-bottom: 1px solid var(--border-color-primary);
+    padding: var(--space-sm);
+    margin-bottom: var(--space-sm);
+}
+.wordmark {
+    font-size: 1rem;
+    margin: 0;
+    padding: 0;
+}
+.content {
+    color: var(--text-color-primary);
+    font-size: 0.875rem;
+    padding: var(--space-sm);
+}
+.content > fieldset {
+    border: 0;
+    margin: 0;
+    padding: 0;
+}
+/* TODO: fix naming conventions */
+legend {
+    float: left;
+    margin-right: var(--space-sm)
+}
+
+/* Toggle component -- basically a prettier checkbox */
+/* TODO: this fails with JS disabled. Style around input:checked instead */
+.toggle {
+    background-color: var(--toggle-bg-color);
+    border: 1px solid var(--border-color-primary);
+    border-radius: var(--toggle-size-base);
+    display: inline-block;
+    position: relative;
+    width: 28px;
+}
+.toggle--on {
+    background-color: #65BC46;
+    box-shadow: inset 1px 2px #43A244;
+}
+.toggle:before {
+    background-color: var(--toggle-bg-color);
+    border: 1px solid #fff;
+    border-radius: var(--toggle-size-base);
+    content: '';
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    margin: auto;
+    height: var(--toggle-size-base);
+    width: var(--toggle-size-base);
+
+    transition: left 250ms ease-out;
+}
+.toggle--on:before {
+    left: 12px;
+    right: 0;
+    box-shadow: 1px 1px 0px var(--border-color-primary),
+        -1px 1px 0px var(--border-color-primary),
+        1px -1px 0 var(--border-color-primary),
+        -1px -1px 0 var(--border-color-primary);
+}
+.toggle__input {
+    cursor: pointer;
+    opacity: 0;
+    vertical-align: middle;
+    width: 100%;
+}
+/* Toggle status text  */
+.toggle__label {
+    line-height: 1.5;
+    vertical-align: middle;
+}
+.toggle__label--left {
+    margin-right: var(--space-sm);
+}
+.toggle__label--right {
+    margin-left: var(--space-sm);
+}
+.toggle__label--with-status {
+    color: #888;
+}
+.toggle--on + .toggle__label--with-status {
+    color: initial;
+    font-weight: bold;
+}

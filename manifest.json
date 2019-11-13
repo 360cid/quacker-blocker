@@ -1,0 +1,23 @@
+{
+    "name": "Quacker Blocker",
+    "description" : "MVP tracker blocker for Chrome and other browsers",
+    "version": "1.0",
+    "manifest_version": 2,
+    "browser_action": {
+        "default_popup": "ui/popup.html",
+        "default_icon": "assets/hello_extensions.png"
+    },
+    "background": {
+        "scripts": ["dist/app.js"],
+        "persistent": true
+    },
+    "permissions": [
+      "<all_urls>",
+      "activeTab",
+      "storage",
+      "tabs",
+      "webRequest", 
+      "webRequestBlocking"
+    ],
+    "web_accessible_resources": ["sources.json"]
+  }
