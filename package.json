@@ -6,12 +6,18 @@
   "scripts": {
     "build": "webpack -p",
     "dev": "webpack --mode=development --watch",
-    "test": "echo \"TODO\" && exit 1"
+    "test": "jest"
   },
   "author": "360cid@gmail.com",
   "private": true,
   "license": "ISC",
   "devDependencies": {
+    "@babel/plugin-transform-modules-commonjs": "^7.7.0",
+    "@babel/plugin-transform-runtime": "^7.6.2",
+    "@babel/preset-env": "^7.7.1",
+    "@babel/runtime": "^7.7.2",
+    "babel-jest": "^24.9.0",
+    "jest": "^24.9.0",
     "webpack": "^4.41.2",
     "webpack-cli": "^3.3.10"
   },

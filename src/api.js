@@ -5,6 +5,9 @@ export const Api = function () {
         @return Promise
     */
     const getSource = async (url) => {
+        if (!url) {
+            throw new Error(`Url not provided`)
+        }
         const response = await fetch(url)
         if (!response.ok) {
             throw new Error(`Failed to fetch url: ${url}`);
