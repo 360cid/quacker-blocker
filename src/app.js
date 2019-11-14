@@ -1,5 +1,5 @@
-import { Api } from './src/api'
-import { Parser } from './src/parser'
+import { Api } from './api'
+import { Parser } from './parser'
 
 const App = function () {
   // TODO: pass context into parser and API. This will determine
@@ -15,7 +15,7 @@ const App = function () {
   // TODO: Eventually we'd probably want to pull keys from  localStorage.
   // Just hard code it for now.
   this.sources = {}
-  this.sourcesLocalPath = 'sources.json'
+  this.sourcesLocalPath = 'sources/sources.json'
 
   this.enabled = true
   this.api = new Api()

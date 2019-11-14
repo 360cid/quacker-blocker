@@ -23,5 +23,5 @@
       "webRequest", 
       "webRequestBlocking"
     ],
-    "web_accessible_resources": ["sources.json"]
+    "web_accessible_resources": ["sources/sources.json"]
   }
