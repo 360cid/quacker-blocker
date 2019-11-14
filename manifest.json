@@ -5,11 +5,15 @@
     "manifest_version": 2,
     "browser_action": {
         "default_popup": "ui/popup.html",
-        "default_icon": "assets/hello_extensions.png"
+        "default_icon": "assets/duck-16.png"
     },
     "background": {
         "scripts": ["dist/app.js"],
         "persistent": true
+    },
+    "icons": {
+      "64": "assets/duck-64.png",
+      "128": "assets/duck-128.png"
     },
     "permissions": [
       "<all_urls>",
