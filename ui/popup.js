@@ -14,13 +14,13 @@
     statusToggleContainer: document.querySelector('.toggle')
   }
 
-  showBlockingUI = () => {
+  this.showBlockingUI = () => {
     ui.statusLabel.innerText = appText.STATUS_ENABLED
     ui.statusToggleContainer.classList.add(classnames.STATUS_ENABLED)
     chrome.browserAction.setTitle({ title: 'Quacker Blocker is enabled' })
   }
 
-  showDisabledUI = () => {
+  this.showDisabledUI = () => {
     ui.statusLabel.innerText = appText.STATUS_DISABLED
     ui.statusToggleContainer.classList.remove(classnames.STATUS_ENABLED)
     chrome.browserAction.setTitle({ title: 'Quacker Blocker is disabled' })
@@ -35,7 +35,7 @@
     const isBlocking = App.getStatus()
     if (isBlocking) {
       ui.statusToggle.checked = true
-      showBlockingUI()
+      this.showBlockingUI()
     }
   })
 
@@ -45,10 +45,10 @@
     // chrome.runtime.sendMessage({ enable: e.target.checked })
     if (e.target.checked) {
       App.enable()
-      showBlockingUI()
+      this.showBlockingUI()
     } else {
       App.disable()
-      showDisabledUI()
+      this.showDisabledUI()
     }
   })
 }())

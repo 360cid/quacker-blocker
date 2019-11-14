@@ -18,6 +18,7 @@
     "@babel/preset-env": "^7.7.1",
     "@babel/runtime": "^7.7.2",
     "babel-jest": "^24.9.0",
+    "copy-webpack-plugin": "^5.0.5",
     "jest": "^24.9.0",
     "standard": "^14.3.1",
     "webpack": "^4.41.2",
@@ -27,6 +28,14 @@
     "abp-filter-parser": "^0.2.0"
   },
   "standard": {
-    "globals": [ "jest", "chrome", "browser", "fetch", "describe", "test", "expect" ]
+    "globals": [
+      "jest",
+      "chrome",
+      "browser",
+      "fetch",
+      "describe",
+      "test",
+      "expect"
+    ]
   }
 }
