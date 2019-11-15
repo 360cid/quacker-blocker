@@ -1,5 +1,6 @@
 import { Api } from './api'
 import { Parser } from './parser'
+import { getDomainFromUrl } from './utilities'
 
 const App = function () {
   // TODO: pass context into parser and API. This will determine
@@ -7,79 +8,76 @@ const App = function () {
   // e.g. this.context = chrome|browser
   // OR use firefox's web extensions polyfill
 
-  // Stores the tracker URL match rules
-  this.rules = []
-  // Stores the exceptions
-  this.exceptions = []
+  this.whitelist = new Set()
 
-  // TODO: Eventually we'd probably want to pull keys from  localStorage.
-  // Just hard code it for now.
   this.sources = {}
   this.sourcesLocalPath = 'sources/sources.json'
 
-  this.enabled = true
   this.api = new Api()
   this.parser = new Parser()
 
-  const getTabState = (tabID) => {
-    const KEY = `tab_${tabID}`
-    return chrome.storage.local.get(KEY)
+  // Add a domain to the whitelist
+  // TODO: persist to localStorage
+  const addToWhitelist = (domain) => {
+    this.whitelist.add(domain)
   }
 
-  // Saves the state of the current tab
-  const saveTabState = (enabled) => {
-    const gettingTab = chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      console.log('tab', tabs[0])
-      // TODO: save state to local storage for this tabId, then reload.
-      // This structure will look like { tab_17: { enabled: true }, tab_21: { enabled: false } } }
-      // TODO: what happens when tab is closed?
-      const currentTabId = tabs[0].id
-      const KEY = `tab_${currentTabId}`
-      const setting = chrome.storage.local.set({
-        [KEY]: { enabled }
-      }).then(() => {
-        chrome.runtime.reload()
-      })
-    })
+  /*
+    Removes a domain from the whitelist.
+    @param domain {string}
+    @return {string} if successful, false if not found
+  */
+  const removeFromWhitelist = (domain) => {
+    return this.whitelist.delete(domain)
   }
 
-  const getStatus = () => this.enabled
+  /*
+    Gets the App's current enabled/disabled status for
+    the given domain.
+    @param domain {string}
+    @return boolean
+  */
+  const isEnabled = (domain) => {
+    return !this.whitelist.has(domain)
+  }
 
-  // TODO: convert all chrome.* callbacks to Promises
-  const reloadCurrentTab = () => {
+  const reloadTab = (tabID) => {
+    chrome.tabs.reload(tabID)
+  }
+
+  /*
+    Gets the current tab object and returns it as a parameter to the provided callback.
+    @param {fn} callback
+  */
+  const getCurrentTab = (callback) => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      console.log('tab', tabs[0])
       const currentTab = tabs[0]
-      if (currentTab) {
-        const { id, url } = currentTab
-        console.log('reloading!', url)
-        chrome.tabs.reload(id)
-      }
+      callback(currentTab)
     })
   }
 
-  // Called from the UI. Enables blocking functionality.
-  const enable = () => {
-    this.enabled = true
-    reloadCurrentTab()
-    // saveTabState(true)
-    // Pull the current enabled value from local storage
+  // Enables blocking functionality for the given domain.
+  // TODO: deprecate these
+  const enable = (domain) => {
+    console.log('removing from whitelist', domain)
+    removeFromWhitelist(domain)
   }
 
-  // Called from the UI. Disables blocking functionality.
-  // Note: this will disable the script for every open tab
-  // TODO: enable/disable on a per-tab basis
-  const disable = () => {
-    this.enabled = false
-    reloadCurrentTab()
-    // saveTabState(false)
+  // Disables blocking functionality for the given domain.
+  const disable = (domain) => {
+    console.log('whitelisting', domain)
+    addToWhitelist(domain)
   }
 
   const checkUrl = (requestDetails) => {
-    if (!this.enabled) { console.log('not blocking', requestDetails.url); return }
     const { url, initiator, type } = requestDetails
+    if (this.whitelist.has(initiator)) {
+      console.log(`not blocking due to ${initiator} whitelist: ${url}`)
+      return
+    }
+
     if (this.parser.shouldBlockUrl(url, initiator, type)) {
-      console.log('blocking:', requestDetails.url)
+      console.log(`blocking: ${url}`)
       return { cancel: true }
     }
   }
@@ -92,29 +90,23 @@ const App = function () {
       ['blocking']
     )
 
-    // TODO: either hook this up or dump it
     // Listen for enable/disable triggers from the UI
+    // UI will send a message in the format { enable: {boolean} }
     chrome.runtime.onMessage.addListener((payload) => {
-      console.log(payload)
-      if (payload.enable === false) {
-        disable()
-      } else {
-        enable()
-      }
+      getCurrentTab((tab) => {
+        const { id, url } = tab
+        const domain = getDomainFromUrl(url)
+        if (payload.enable) {
+          enable(domain)
+        } else {
+          disable(domain)
+        }
+        reloadTab(id)
+      })
     })
   }
 
   const initialize = () => {
-    // TODO: grab enabled status from local storage
-    console.log('initializing')
-    // TODO: initialize() enables extension globally across all tabs, so it will continue to block in the
-    // background even if a tab isn't currently focused.
-    // Need a listener when activetab changes to switch to enabled/disabled state for each tab
-    //
-    if (!this.enabled) {
-      console.log('Extension disabled; returning')
-      return
-    }
     this.api.getSource(this.sourcesLocalPath).then((sourceText) => {
       this.sources = JSON.parse(sourceText)
 
@@ -137,7 +129,8 @@ const App = function () {
   return {
     enable,
     disable,
-    getStatus,
+    getCurrentTab,
+    isEnabled,
     initialize
   }
 }
@@ -145,5 +138,3 @@ const App = function () {
 const app = new App()
 app.initialize()
 window.App = app
-
-export default app
