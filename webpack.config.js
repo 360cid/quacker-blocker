@@ -13,7 +13,8 @@ module.exports = {
     path: path.resolve(__dirname, 'dist')
   },
   plugins: [
-    new CleanWebpackPlugin(),
+    // Prevent CleanWebpackPlugin from deleting static files in watch mode
+    new CleanWebpackPlugin({ cleanStaleWebpackAssets: false }),
     new CopyWebpackPlugin([
       { from: 'assets', to: path.resolve(__dirname, 'dist/assets') },
       { from: 'sources', to: path.resolve(__dirname, 'dist/sources') },

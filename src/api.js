@@ -1,9 +1,9 @@
 export const Api = function () {
   /*
-        Gets the contents at a given url.
-        @param url {string}
-        @return Promise
-    */
+    Gets the contents at a given url.
+    @param url {string}
+    @return Promise
+  */
   const getSource = async (url) => {
     if (!url) {
       throw new Error('Url not provided')
