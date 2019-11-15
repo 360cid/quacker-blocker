@@ -15,7 +15,7 @@ describe('getSource', () => {
     setup(true)
     const api = new Api()
     const testUrl = 'https://www.ebird.org'
-    const result = await api.getSource(testUrl)
+    await api.getSource(testUrl)
     expect(global.fetch).toHaveBeenCalledWith(testUrl)
   })
   test('It should resolve with text content', async () => {

@@ -16,31 +16,37 @@ const App = function () {
   this.api = new Api()
   this.parser = new Parser()
 
-  // Add a domain to the whitelist
-  // TODO: persist to localStorage
+  /*
+    Adds a domain to the whitelist.
+    @param {string} domain
+  */
   const addToWhitelist = (domain) => {
+    // TODO: persist to localStorage
     this.whitelist.add(domain)
   }
 
   /*
     Removes a domain from the whitelist.
-    @param domain {string}
-    @return {string} if successful, false if not found
+    @param {string} domain
   */
   const removeFromWhitelist = (domain) => {
-    return this.whitelist.delete(domain)
+    this.whitelist.delete(domain)
   }
 
   /*
     Gets the App's current enabled/disabled status for
     the given domain.
-    @param domain {string}
+    @param {string} domain
     @return boolean
   */
   const isEnabled = (domain) => {
     return !this.whitelist.has(domain)
   }
 
+  /*
+    Reloads the given browser tab.
+    @param {number} tabID
+  */
   const reloadTab = (tabID) => {
     chrome.tabs.reload(tabID)
   }
@@ -56,19 +62,10 @@ const App = function () {
     })
   }
 
-  // Enables blocking functionality for the given domain.
-  // TODO: deprecate these
-  const enable = (domain) => {
-    console.log('removing from whitelist', domain)
-    removeFromWhitelist(domain)
-  }
-
-  // Disables blocking functionality for the given domain.
-  const disable = (domain) => {
-    console.log('whitelisting', domain)
-    addToWhitelist(domain)
-  }
-
+  /*
+    Checks requests to determine whether they should be blocked or not.
+    @param {object} requestDetails
+  */
   const checkUrl = (requestDetails) => {
     const { url, initiator, type } = requestDetails
     if (this.whitelist.has(initiator)) {
@@ -83,7 +80,6 @@ const App = function () {
   }
 
   const setupListeners = () => {
-    // Block requests
     chrome.webRequest.onBeforeRequest.addListener(
       checkUrl,
       { urls: ['<all_urls>'] },
@@ -97,9 +93,9 @@ const App = function () {
         const { id, url } = tab
         const domain = getDomainFromUrl(url)
         if (payload.enable) {
-          enable(domain)
+          removeFromWhitelist(domain)
         } else {
-          disable(domain)
+          addToWhitelist(domain)
         }
         reloadTab(id)
       })
@@ -127,8 +123,6 @@ const App = function () {
   }
 
   return {
-    enable,
-    disable,
     getCurrentTab,
     isEnabled,
     initialize
