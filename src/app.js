@@ -2,25 +2,26 @@ import { Api } from './api'
 import { Parser } from './parser'
 import { getDomainFromUrl } from './utilities'
 
-const App = function () {
+class App {
   // TODO: pass context into parser and API. This will determine
   // which browser flavor the extension is running.
   // e.g. this.context = chrome|browser
   // OR use firefox's web extensions polyfill
+  constructor() {
+    this.whitelist = new Set()
 
-  this.whitelist = new Set()
+    this.sources = {}
+    this.sourcesLocalPath = 'sources/sources.json'
 
-  this.sources = {}
-  this.sourcesLocalPath = 'sources/sources.json'
-
-  this.api = new Api()
-  this.parser = new Parser()
+    this.api = new Api()
+    this.parser = new Parser()
+  }
 
   /*
     Adds a domain to the whitelist.
     @param {string} domain
   */
-  const addToWhitelist = (domain) => {
+  addToWhitelist (domain) {
     // TODO: persist to localStorage
     this.whitelist.add(domain)
   }
@@ -29,7 +30,7 @@ const App = function () {
     Removes a domain from the whitelist.
     @param {string} domain
   */
-  const removeFromWhitelist = (domain) => {
+  removeFromWhitelist (domain) {
     this.whitelist.delete(domain)
   }
 
@@ -39,23 +40,15 @@ const App = function () {
     @param {string} domain
     @return boolean
   */
-  const isEnabled = (domain) => {
+  isEnabled (domain) {
     return !this.whitelist.has(domain)
-  }
-
-  /*
-    Reloads the given browser tab.
-    @param {number} tabID
-  */
-  const reloadTab = (tabID) => {
-    chrome.tabs.reload(tabID)
   }
 
   /*
     Gets the current tab object and returns it as a parameter to the provided callback.
     @param {fn} callback
   */
-  const getCurrentTab = (callback) => {
+  getCurrentTab (callback) {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       const currentTab = tabs[0]
       callback(currentTab)
@@ -66,7 +59,7 @@ const App = function () {
     Checks requests to determine whether they should be blocked or not.
     @param {object} requestDetails
   */
-  const checkUrl = (requestDetails) => {
+  checkUrl (requestDetails) {
     const { url, initiator, type } = requestDetails
     if (this.whitelist.has(initiator)) {
       console.log(`not blocking due to ${initiator} whitelist: ${url}`)
@@ -79,9 +72,9 @@ const App = function () {
     }
   }
 
-  const setupListeners = () => {
+  setupListeners () {
     chrome.webRequest.onBeforeRequest.addListener(
-      checkUrl,
+      this.checkUrl.bind(this),
       { urls: ['<all_urls>'] },
       ['blocking']
     )
@@ -89,24 +82,24 @@ const App = function () {
     // Listen for enable/disable triggers from the UI
     // UI will send a message in the format { enable: {boolean} }
     chrome.runtime.onMessage.addListener((payload) => {
-      getCurrentTab((tab) => {
+      this.getCurrentTab((tab) => {
         const { id, url } = tab
         const domain = getDomainFromUrl(url)
         if (payload.enable) {
-          removeFromWhitelist(domain)
+          this.removeFromWhitelist(domain)
         } else {
-          addToWhitelist(domain)
+          this.addToWhitelist(domain)
         }
-        reloadTab(id)
+        chrome.tabs.reload(id)
       })
     })
   }
 
-  const initialize = () => {
+  initialize () {
     this.api.getSource(this.sourcesLocalPath).then((sourceText) => {
       this.sources = JSON.parse(sourceText)
 
-      for (const key in this.sources) {
+      Object.keys(this.sources).map((key) => {
         // Send each source key off to the API
         // This loop doesn't make a ton of sense since we currently only have one key in sources.json,
         // but eventually we may have more, plus local user data, plus lists that might be enabled/disabled on demand.
@@ -116,19 +109,13 @@ const App = function () {
         const url = this.sources[key].localUrl ? this.sources[key].localUrl : this.sources[key].remoteUrl
         this.api.getSource(url).then((rawFilterText) => {
           this.parser.parseRules(rawFilterText)
-          setupListeners()
+          this.setupListeners()
         })
-      }
+      })
     })
-  }
 
-  return {
-    getCurrentTab,
-    isEnabled,
-    initialize
+    return this
   }
 }
 
-const app = new App()
-app.initialize()
-window.App = app
+window.App = new App().initialize()

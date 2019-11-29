@@ -1,19 +1,22 @@
 import * as ABPFilterParser from 'abp-filter-parser'
 
-export const Parser = function () {
-  this.ABPfilters = {}
 
-  // Map webRequest resourceTypes to ABP types
-  const elementTypes = {
-    script: ABPFilterParser.elementTypes.SCRIPT,
-    image: ABPFilterParser.elementTypes.IMAGE,
-    stylesheet: ABPFilterParser.elementTypes.STYLESHEET,
-    object: ABPFilterParser.elementTypes.OBJECT,
-    xmlhttprequest: ABPFilterParser.elementTypes.XMLHTTPREQUEST,
-    object_subrequest: ABPFilterParser.elementTypes.OBJECTSUBREQUEST,
-    main_frame: ABPFilterParser.elementTypes.DOCUMENT,
-    sub_frame: ABPFilterParser.elementTypes.SUBDOCUMENT,
-    other: ABPFilterParser.elementTypes.OTHER
+// Map webRequest resourceTypes to ABP types
+const elementTypes = {
+  script: ABPFilterParser.elementTypes.SCRIPT,
+  image: ABPFilterParser.elementTypes.IMAGE,
+  stylesheet: ABPFilterParser.elementTypes.STYLESHEET,
+  object: ABPFilterParser.elementTypes.OBJECT,
+  xmlhttprequest: ABPFilterParser.elementTypes.XMLHTTPREQUEST,
+  object_subrequest: ABPFilterParser.elementTypes.OBJECTSUBREQUEST,
+  main_frame: ABPFilterParser.elementTypes.DOCUMENT,
+  sub_frame: ABPFilterParser.elementTypes.SUBDOCUMENT,
+  other: ABPFilterParser.elementTypes.OTHER
+}
+
+export class Parser {
+  constructor () {
+    this.ABPfilters = {}
   }
 
   /*
@@ -21,7 +24,7 @@ export const Parser = function () {
     @param filterContent { String } - a newline-delimited text string
     @return {Object} { rules: Array<String>, exceptions: Array<String }
   */
-  const parseRules = (filterContent) => {
+  parseRules (filterContent) {
     ABPFilterParser.parse(filterContent, this.ABPfilters)
   }
 
@@ -31,15 +34,10 @@ export const Parser = function () {
     @param currentDomain {string} - the name of the current domain, e.g. news.ycombinator.com
     @return bool
   */
-  const shouldBlockUrl = (urlString, currentDomain, fileType) => {
+  shouldBlockUrl (urlString, currentDomain, fileType) {
     return ABPFilterParser.matches(this.ABPfilters, urlString, {
       domain: currentDomain,
       elementTypeMaskMap: elementTypes[fileType] || elementTypes.other
     })
-  }
-
-  return {
-    parseRules,
-    shouldBlockUrl
   }
 }
