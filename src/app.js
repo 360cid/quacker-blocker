@@ -35,13 +35,12 @@ class App {
   }
 
   /*
-    Gets the App's current enabled/disabled status for
-    the given domain.
+    Check whether the given domain is on the whitelist.
     @param {string} domain
     @return boolean
   */
-  isEnabled (domain) {
-    return !this.whitelist.has(domain)
+  isDomainWhitelisted (domain) {
+    return this.whitelist.has(domain)
   }
 
   /*
@@ -58,18 +57,23 @@ class App {
   /*
     Checks requests to determine whether they should be blocked or not.
     @param {object} requestDetails
+    @return {object} { cancel: {boolean} }
   */
   checkUrl (requestDetails) {
     const { url, initiator, type } = requestDetails
-    if (this.whitelist.has(initiator)) {
-      console.log(`not blocking due to ${initiator} whitelist: ${url}`)
-      return
+    const isDomainWhitelisted = this.isDomainWhitelisted(initiator)
+    // TODO: this will unblock every request from this domain regardless of tab
+    // What we probably want is to only block on this particular _active_ tab.
+    if (isDomainWhitelisted) {
+      return { cancel: false }
     }
 
-    if (this.parser.shouldBlockUrl(url, initiator, type)) {
+    const shouldBlockUrl = this.parser.shouldBlockUrl(url, initiator, type)
+    const cancel = shouldBlockUrl && !isDomainWhitelisted
+    if (cancel) {
       console.log(`blocking: ${url}`)
-      return { cancel: true }
     }
+    return { cancel }
   }
 
   setupListeners () {

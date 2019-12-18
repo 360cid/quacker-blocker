@@ -35,7 +35,7 @@ chrome.runtime.getBackgroundPage((window) => {
   App.getCurrentTab((tab) => {
     const { url } = tab
     const domain = getDomainFromUrl(url)
-    const isBlocking = App.isEnabled(domain)
+    const isBlocking = !App.isDomainWhitelisted(domain)
     if (isBlocking) {
       ui.statusToggle.checked = true
       showBlockingUI()
